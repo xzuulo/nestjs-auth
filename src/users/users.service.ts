@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity.js';
@@ -45,6 +49,8 @@ export class UsersService {
   }
 
   async createUser(user: { email: string; password: string; role: Role }) {
+    if (await this.findByEmail(user.email))
+      throw new ConflictException('Email уже занят');
     const passwordHash = await bcrypt.hash(user.password, 10);
     const createdUser = this.usersRepository.create({
       email: user.email,
